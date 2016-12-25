@@ -265,6 +265,10 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
 
     @Override
     public boolean remove(E value) {
+        if (value == null) {
+            throw new NullPointerException("value is null");
+        }
+
         boolean res = removeByValue(this.root, value);
         if(res)
             size--;
