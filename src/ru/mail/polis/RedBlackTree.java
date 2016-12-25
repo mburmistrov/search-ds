@@ -99,7 +99,7 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
 
     @Override
     public boolean isEmpty() {
-        return root == null;
+        return root == nil;
     }
 
     @Override
@@ -107,7 +107,7 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         if (value == null) {
             throw new NullPointerException("value is null");
         }
-        if (root != null) {
+        if (root != nil) {
             Node curr = root;
             while (curr != null) {
                 int cmp = compare(curr.value, value);
