@@ -4,9 +4,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ArrayList;
+import java.util.Random;
 
 //TODO: write code here
-//RedBlackTree без удаления
 public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
 
     protected static final boolean BLACK = false;
@@ -262,7 +262,144 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
 
     @Override
     public boolean remove(E value) {
-        return false;
+        if (value == null) {
+            throw new NullPointerException("value is null");
+        }
+        Node nodeForRemove, n, k;
+        nodeForRemove = nodeForRemove(value, root);
+        if(nodeForRemove == nil){
+            return false;
+        }
+        boolean isFixupOnRemoveNeeded;
+        if(nodeForRemove.color == BLACK){
+            isFixupOnRemoveNeeded = true;
+        } else {
+            isFixupOnRemoveNeeded = false;
+        }
+
+        if(nodeForRemove.left == nil) {
+            n = nodeForRemove.right;
+            performTransplant(nodeForRemove, nodeForRemove.right);
+        } else if(nodeForRemove.right == nil){
+            n = nodeForRemove.left;
+            performTransplant(nodeForRemove, nodeForRemove.left);
+        } else {
+            Node tempRoot = nodeForRemove.right;
+            while(tempRoot.left != nil) {
+                tempRoot = tempRoot.left;
+            }
+            k = tempRoot;
+            if(k.color == BLACK){
+                isFixupOnRemoveNeeded = true;
+            } else {
+                isFixupOnRemoveNeeded = false;
+            }
+            n = k.right;
+            if(k.parent == nodeForRemove) {
+                n.parent = k;
+            } else {
+                performTransplant(k, k.right);
+                k.right = nodeForRemove.right;
+                k.right.parent = k;
+            }
+            performTransplant(nodeForRemove, k);
+            k.left = nodeForRemove.left;
+            k.left.parent = k;
+            k.color = nodeForRemove.color;
+        }
+
+        if(isFixupOnRemoveNeeded){
+            fixUpOnRemove(n);
+        }
+
+        size--;
+        return true;
+    }
+
+    private Node nodeForRemove(E value, Node n) {
+        if (isEmpty()) {
+            return nil;
+        }
+        if (compare(value, n.value) < 0) { //value < n.value
+            if (n.left != nil) {
+                return nodeForRemove(value, n.left);
+            }
+        } else if (compare(value, n.value) > 0) { //value > n.value
+            if (n.right != nil) {
+                return nodeForRemove(value, n.right);
+            }
+        } else { //value == n.value
+            return n;
+        }
+        return nil;
+    }
+
+    void performTransplant(Node n, Node k) {
+        if(n.parent == nil) {
+            root = k;
+        } else if(n == n.parent.left) {
+            n.parent.right = k;
+        } else {
+            n.parent.left = k;
+        }
+        k.parent = n.parent;
+    }
+
+    void fixUpOnRemove(Node node) {
+        while(node != root && node.color == BLACK) {
+            if(node == node.parent.left) {
+                Node w = node.parent.right;
+                if(w.color == RED) {
+                    w.color = BLACK;
+                    node.parent.color = RED;
+                    rotateLeft(node.parent);
+                    w = node.parent.right;
+                }
+                if(w.left.color == BLACK && w.right.color == BLACK) {
+                    w.color = RED;
+                    node = node.parent;
+                    continue;
+                } else if(w.right.color == BLACK) {
+                    w.left.color = BLACK;
+                    w.color = RED;
+                    rotateRight(w);
+                    w = node.parent.right;
+                }
+                if(w.right.color == RED) {
+                    w.color = node.parent.color;
+                    node.parent.color = BLACK;
+                    w.right.color = BLACK;
+                    rotateLeft(node.parent);
+                    node = root;
+                }
+            } else {
+                Node w = node.parent.left;
+                if(w.color == RED) {
+                    w.color = BLACK;
+                    node.parent.color = RED;
+                    rotateRight(node.parent);
+                    w = node.parent.left;
+                }
+                if(w.right.color == BLACK && w.left.color == BLACK) {
+                    w.color = RED;
+                    node = node.parent;
+                    continue;
+                } else if(w.left.color == BLACK) {
+                    w.right.color = BLACK;
+                    w.color = RED;
+                    rotateLeft(w);
+                    w = node.parent.left;
+                }
+                if(w.left.color == RED) {
+                    w.color = node.parent.color;
+                    node.parent.color = BLACK;
+                    w.left.color = BLACK;
+                    rotateRight(node.parent);
+                    node = root;
+                }
+            }
+        }
+        node.color = BLACK;
     }
 
     private int compare(E v1, E v2) {
@@ -279,5 +416,36 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         tree.add(10);
         tree.add(5);
         tree.add(15);
+        System.out.println(tree.inorderTraverse());
+        System.out.println(tree.size);
+        System.out.println(tree);
+        tree.remove(10);
+        tree.remove(15);
+        System.out.println(tree.size);
+        System.out.println(tree);
+        tree.remove(5);
+        System.out.println(tree.size);
+        System.out.println(tree);
+        tree.add(15);
+        System.out.println(tree.size);
+        System.out.println(tree);
+
+        System.out.println("------------");
+        Random rnd = new Random();
+        tree = new RedBlackTree<>();
+        for (int i = 0; i < 15; i++) {
+            tree.add(rnd.nextInt(50));
+        }
+        System.out.println(tree.inorderTraverse());
+        tree = new RedBlackTree<>((v1, v2) -> {
+            // Even first
+            final int c = Integer.compare(v1 % 2, v2 % 2);
+            return c != 0 ? c : Integer.compare(v1, v2);
+        });
+        tree = new RedBlackTree<>();
+        for (int i = 0; i < 30; i++) {
+            tree.add(rnd.nextInt(50));
+        }
+        System.out.println(tree.inorderTraverse());
     }
 }
