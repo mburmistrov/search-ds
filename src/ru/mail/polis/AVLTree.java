@@ -125,35 +125,34 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
             throw new NullPointerException("value is null");
         }
 
-        Node nodeToAdd = new Node(value);
-        boolean res = addAVLNode(root, nodeToAdd);
+        boolean res = addAVLNode(root, value);
         if(res)
             size++;
         return res;
     }
 
-    private boolean addAVLNode(Node p, Node q) {
+    private boolean addAVLNode(Node p, E q) {
         boolean result;
         if (p == null) {
-            root = q;
+            root = new Node(q);
             result = true;
         } else {
-            if(compare(q.value, p.value) < 0){ //q.value < p.value
+            if (compare(q, p.value) < 0){ //q < p.value
                 if(p.left == null) {
-                    p.left = q;
-                    q.parent = p;
+                    p.left = new Node(q);
+                    p.left.parent = p;
 
-                    checkBalance(p);
+                    checkBalance(p.left);
                     result = true;
                 } else {
                     result = addAVLNode(p.left, q);
                 }
-            } else if(compare(q.value, p.value) > 0){ //q.value > p.value
+            } else if(compare(q, p.value) > 0){ //q > p.value
                 if(p.right == null) {
-                    p.right = q;
-                    q.parent = p;
+                    p.right = new Node(q);
+                    p.right.parent = p;
 
-                    checkBalance(p);
+                    checkBalance(p.right);
                     result = true;
                 } else {
                     result = addAVLNode(p.right, q);
@@ -395,5 +394,9 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
             tree.add(rnd.nextInt(50));
         }
         System.out.println(tree.inorderTraverse());
+        ISortedSet<Integer> set = new AVLTree<Integer>();
+        for (int i = 0; i < 1000; i++) {
+            set.add(rnd.nextInt(1000));
+        }
     }
 }
