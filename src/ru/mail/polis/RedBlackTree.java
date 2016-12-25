@@ -29,10 +29,10 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         public String toString() {
             final StringBuilder sb = new StringBuilder("N{");
             sb.append("d=").append(value);
-            if (left != null) {
+            if (left != nil) {
                 sb.append(", l=").append(left);
             }
-            if (right != null) {
+            if (right != nil) {
                 sb.append(", r=").append(right);
             }
             sb.append('}');
@@ -58,7 +58,7 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
             throw new NoSuchElementException("set is empty, no first element");
         }
         Node curr = root;
-        while (curr.left != null) {
+        while (curr.left != nil) {
             curr = curr.left;
         }
         return curr.value;
@@ -70,7 +70,7 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
             throw new NoSuchElementException("set is empty, no last element");
         }
         Node curr = root;
-        while (curr.right != null) {
+        while (curr.right != nil) {
             curr = curr.right;
         }
         return curr.value;
@@ -84,7 +84,7 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
     }
 
     private void inorderTraverse(Node curr, List<E> list) {
-        if (curr == null) {
+        if (curr == nil) {
             return;
         }
         inorderTraverse(curr.left, list);
@@ -109,7 +109,7 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         }
         if (root != nil) {
             Node curr = root;
-            while (curr != null) {
+            while (curr != nil) {
                 int cmp = compare(curr.value, value);
                 if (cmp == 0) {
                     return true;
