@@ -338,9 +338,9 @@ public class RedBlackTree<E extends Comparable<E>> implements ISortedSet<E> {
         if(n.parent == nil) {
             root = k;
         } else if(n == n.parent.left) {
-            n.parent.right = k;
-        } else {
             n.parent.left = k;
+        } else {
+            n.parent.right = k;
         }
         k.parent = n.parent;
     }
