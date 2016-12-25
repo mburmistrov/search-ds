@@ -19,7 +19,6 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
         Node left;
         Node right;
         Node parent;
-        short balanceFactor = 0;
 
         @Override
         public String toString() {
@@ -125,31 +124,32 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
             throw new NullPointerException("value is null");
         }
 
-        boolean res = addAVLNode(root, value);
+        Node nodeToAdd = new Node(value);
+        boolean res = addAVLNode(root, nodeToAdd);
         if(res)
             size++;
         return res;
     }
 
-    private boolean addAVLNode(Node p, E q) {
+    private boolean addAVLNode(Node p, Node q) {
         boolean result;
         if (p == null) {
-            root = new Node(q);
+            root = q;
             result = true;
         } else {
-            if (compare(q, p.value) < 0){ //q < p.value
+            if (compare(q.value, p.value) < 0){ //q < p.value
                 if(p.left == null) {
-                    p.left = new Node(q);
+                    p.left = q;
                     p.left.parent = p;
 
-                    checkBalance(p.left);
+                    checkBalance(p);
                     result = true;
                 } else {
                     result = addAVLNode(p.left, q);
                 }
-            } else if(compare(q, p.value) > 0){ //q > p.value
+            } else if(compare(q.value, p.value) > 0){ //q > p.value
                 if(p.right == null) {
-                    p.right = new Node(q);
+                    p.right = q;
                     p.right.parent = p;
 
                     checkBalance(p.right);
@@ -166,42 +166,47 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
 
 
     private void checkBalance(Node current) {
-        if (current.balanceFactor > 1 || current.balanceFactor < -1) {
-            performRebalance(current);
-            return;
+        int currentBalanceFactor = balanceFactor(current);
+        if (currentBalanceFactor < -1) {
+            if (height(current.left.left) < height(current.left.right)) {
+                current = rotateLeftRight(current);
+            } else {
+                current = rotateRight(current);
+            }
+        } else if (currentBalanceFactor > 1) {
+            if (height(current.right.right) < height(current.right.left)) {
+                current = rotateRightLeft(current);
+            } else {
+                current = rotateLeft(current);
+            }
         }
-
         if (current.parent != null) {
-            if (current.parent.left == current) {
-                current.parent.balanceFactor += 1;
-            } else if (current.parent.right == current) {
-                current.parent.balanceFactor -= 1;
-            }
-
-            if (current.parent.balanceFactor != 0) {
-                checkBalance(current.parent);
-            }
+            checkBalance(current.parent);
+        } else {
+            this.root = current;
         }
     }
 
-    private void performRebalance(Node current) {
-        if (current.balanceFactor > 0) {
-
-            if (current.left.balanceFactor < 0) {
-                rotateLeftRight(current);
-            } else {
-                rotateRight(current);
-            }
-        } else if (current.balanceFactor < 0) {
-            if (current.right.balanceFactor > 0) {
-                rotateRightLeft(current);
-            } else {
-                rotateLeft(current);
-            }
+    private int height(Node current) {
+        if (current == null) {
+            return -1;
+        }
+        if (current.left == null && current.right == null) {
+            return 0;
+        } else if (current.left == null) {
+            return 1 + height(current.right);
+        } else if (current.right == null) {
+            return 1 + height(current.left);
+        } else {
+            return 1 + Math.max(height(current.left), height(current.right));
         }
     }
 
-    private void rotateLeft(Node n) {
+    private int balanceFactor(Node current) {
+        return height(current.right) - height(current.left);
+    }
+
+    private Node rotateLeft(Node n) {
         Node v = n.right;
         n.right = v.left;
 
@@ -217,16 +222,14 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
             } else {
                 n.parent.right = v;
             }
-        } else {
-            root = v;
         }
         v.left = n;
         n.parent = v;
-        n.balanceFactor = (short) (1 + n.balanceFactor - Math.min(v.balanceFactor, 0));
-        v.balanceFactor = (short) (1 + v.balanceFactor + Math.max(n.balanceFactor, 0));
+
+        return n;
     }
 
-    private void rotateRight(Node n) {
+    private Node rotateRight(Node n) {
         Node v = n.left;
         n.left = v.right;
 
@@ -242,24 +245,22 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
             } else {
                 n.parent.left = v;
             }
-        } else {
-            root = v;
         }
 
         v.right = n;
         n.parent = v;
-        n.balanceFactor = (short) (n.balanceFactor - Math.max(v.balanceFactor, 0) - 1);
-        v.balanceFactor = (short) (v.balanceFactor + Math.min(n.balanceFactor, 0) - 1);
+
+        return n;
     }
 
-    private void rotateLeftRight(Node n) {
-        rotateLeft(n.left);
-        rotateRight(n);
+    private Node rotateLeftRight(Node n) {
+        n.left = rotateLeft(n.left);
+        return rotateRight(n);
     }
 
-    private void rotateRightLeft(Node n) {
-        rotateRight(n.right);
-        rotateLeft(n);
+    private Node rotateRightLeft(Node n) {
+        n.right = rotateRight(n.right);
+        return rotateLeft(n);
     }
 
     @Override
@@ -397,6 +398,9 @@ public class AVLTree<E extends Comparable<E>> implements ISortedSet<E> {
         ISortedSet<Integer> set = new AVLTree<Integer>();
         for (int i = 0; i < 1000; i++) {
             set.add(rnd.nextInt(1000));
+        }
+        for (int i = 0; i < 1000; i++) {
+            set.remove(rnd.nextInt(1000));
         }
     }
 }
